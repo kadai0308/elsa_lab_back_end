@@ -175,4 +175,5 @@ JWT_AUTH = {
 
 CORS_ORIGIN_REGEX_WHITELIST = (
     r'^(https?://)?(\w+\.)?127.0.0.1:3000$',
+    r'^(https?://)?(\w+\.)?140.114.75.146:8000$',
 )
