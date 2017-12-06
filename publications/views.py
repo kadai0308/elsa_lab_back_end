@@ -56,13 +56,14 @@ class PublicationList(APIView, JSONWebTokenAuthentication):
     def post(self, request, format=None):
         serializer = PublicationSerializer(data=request.data)
         data = request.data
+        file = request.data.pop('files')[0]
         if serializer.is_valid():
             path = './publications/publications_file/{}'.format(serializer.data['title'])
             if not os.path.exists(path):
                 os.makedirs(path)
 
             # front-end only allow upload one file
-            file = data.pop('files')[0]
+            # file = data.pop('files')[0]
             # create Publication object
             p = Publication.objects.create(**data)
             # create and write file object
@@ -87,7 +88,6 @@ class PublicationDetail(APIView, JSONWebTokenAuthentication):
         data = request.data
         file = data.pop('files')[0]
         serializer = PublicationSerializer(data=request.data)
-        print(serializer.is_valid())
         if serializer.is_valid():
             path = './publications/publications_file/{}'.format(serializer.data['title'])
             if not os.path.exists(path):
