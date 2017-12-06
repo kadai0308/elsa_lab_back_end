@@ -138,8 +138,8 @@ STATICFILES_DIRS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
-        # 'rest_framework.permissions.AllowAny',
+        # 'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+        'rest_framework.permissions.AllowAny',
         # 'rest_framework.permissions.IsAuthenticated',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -164,6 +164,15 @@ JWT_AUTH = {
 
 # django-cors-headers setting
 
-CORS_ORIGIN_WHITELIST = (
-    'http://127.0.0.1:3000/'
+# CORS_ORIGIN_ALLOW_ALL = True
+
+# CORS_ORIGIN_WHITELIST = (
+#     'http://127.0.0.1:3000/login',
+#     'http://127.0.0.1:3000/',
+#     'http://140.114.75.146:8000',
+#     'http://140.114.75.146'
+# )
+
+CORS_ORIGIN_REGEX_WHITELIST = (
+    r'^(https?://)?(\w+\.)?127.0.0.1:3000$',
 )

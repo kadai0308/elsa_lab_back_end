@@ -17,7 +17,7 @@ Including another URLconf
 from django.conf.urls import url, include
 from rest_framework import routers
 from user import views
-from rest_framework_jwt.views import obtain_jwt_token
+from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token
 # from django.contrib import admin
 import user.views as users
 import courses.views as courses
@@ -33,6 +33,7 @@ urlpatterns = [
     url(r'^users$', users.UserList.as_view()),
     url(r'^user/(?P<user_id>[0-9]+)$', users.UserDetail.as_view()),
     url(r'^api-token-auth/', obtain_jwt_token),
+    url(r'^api-token-refresh/', refresh_jwt_token),
 ]
 
 urlpatterns += (
