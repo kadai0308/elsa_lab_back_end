@@ -178,5 +178,5 @@ CORS_ORIGIN_REGEX_WHITELIST = (
     r'^(https?://)?(\w+\.)?localhost:3000$',
     r'^(https?://)?(\w+\.)?127.0.0.1:3000$',
     r'^(https?://)?(\w+\.)?140.114.75.146$',
-    r'^(https?://)?(\w+\.)?fiona.cs.nthu.edu.tw$',
+    r'^(https?://)?(\w+\.)?elsa.cs.nthu.edu.tw$',
 )
