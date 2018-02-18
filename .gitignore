@@ -1,2 +1,4 @@
 *.pyc
 *.DS_Store
+course_data
+db.sqlite3
