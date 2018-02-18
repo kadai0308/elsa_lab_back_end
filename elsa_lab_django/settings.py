@@ -13,7 +13,7 @@ import datetime
 import os
 
 # domin setting
-DOMAIN = 'http://elsa.cs.nthu.edu.tw/'
+DOMAIN = 'http://elsa.cs.nthu.edu.tw'
 # DOMAIN = 'http://127.0.0.1:8000'
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
