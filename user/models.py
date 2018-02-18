@@ -14,7 +14,7 @@ def create_user_profile(sender, instance, created, **kwargs):
         Profile.objects.create(user=instance)
 
 # student enum
-studentType = Enum('studentType', 'College Master PHD Teacher Alumni')
+studentType = Enum('studentType', 'course_student College Master PHD Teacher Alumni')
 studentTypeChoices = tuple([(str(i.value), i.name) for i in studentType])
 
 
@@ -25,6 +25,7 @@ class Profile(models.Model):
     pictureUrl = models.URLField(max_length=200, default=DOMAIN + "/static/users_avaters/default.jpg")
     researchArea = models.TextField()
     selfIntro = models.TextField()
+    student_id = models.CharField(max_length=255)
 
 
 @receiver(post_save, sender=Profile)

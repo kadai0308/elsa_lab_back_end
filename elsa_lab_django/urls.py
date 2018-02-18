@@ -49,8 +49,11 @@ urlpatterns += (
     url(r'^courses/(?P<course_id>[0-9]+)/contents/(?P<content_id>[0-9]+)$', courses.ContentDetail.as_view()),
     url(r'^courses/(?P<course_id>[0-9]+)/contents/(?P<content_id>[0-9]+)/lectures$', courses.LectureList.as_view()),
     url(r'^courses/(?P<course_id>[0-9]+)/contents/(?P<content_id>[0-9]+)/lectures/(?P<lecture_id>[0-9]+)$', courses.LectureDetail.as_view()),
+
 )
 
 urlpatterns += (
+    url(r'^files/$', courses.FileList.as_view()),
     url(r'^files/(?P<file_id>[0-9]+)$', courses.FileDetail.as_view()),
+    url(r'^files/(?P<file_id>[0-9]+)/pages/(?P<page_num>[0-9]+)$', courses.CommentList.as_view()),
 )
