@@ -30,23 +30,40 @@ class UserList(APIView, JSONWebTokenAuthentication):
         return Response(serializer.data)
 
     def post(self, request, format=None):
-        userData = {
-            'username': request.data.pop('username'),
-            'password': 'elsayoyo'
+        username = request.data['username']
+        resp_data = {}
+        
+        # error handle
+        if not '@' in username:
+            resp_data['type'] = 'error'
+            resp_data['message'] = 'Account(Username) have to be email.'
+            return JsonResponse(resp_data)
+
+        if User.objects.filter(username=username).exists():
+            resp_data['type'] = 'error'
+            resp_data['message'] = 'Username already exists.'
+            return JsonResponse(resp_data)
+
+        accont_data = {
+            'username': request.data['username'],
+            'password': request.data.get('password', 'elsalab')
         }
-        serializer = UserSerializer(data=userData)
+
+        serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
-            user = User.objects.create_user(**userData)
+            user = User.objects.create_user(**accont_data)
             self.updateProfile(user.profile, request.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def updateProfile(self, profile, data):
-        profile.name = data['name']
-        profile.pictureUrl = data['pictureUrl']
-        profile.studentType = data['studentType']
-        profile.researchArea = data['researchArea']
-        profile.selfIntro = data['selfIntro']
+        print(data)
+        profile.name = data.get('name', '')
+        profile.pictureUrl = data.get('pictureUrl', '')
+        profile.studentType = data.get('studentType', 'course_student')
+        profile.researchArea = data.get('researchArea', '')
+        profile.selfIntro = data.get('selfIntro', '')
+        profile.student_id = data.get('student_id', '')
         profile.save()
 
 

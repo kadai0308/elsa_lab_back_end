@@ -1,13 +1,24 @@
 from user.serializers import UserSerializer
-from .models import Course, Content, Lecture, File
+from .models import Course, Content, Lecture, File, Comment
 from rest_framework import serializers
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = UserSerializer(source='user', required=False)
+
+    class Meta:
+        model = Comment
+        fields = ('content', 'file_page', 'created_at', 'author')
 
 
 class FileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = File
-        fields = ('id', 'title', 'size', 'type', 'path', 'url')
+        fields = (
+            'id', 'title', 'size', 'type',
+            'path', 'url', 'absolute_path',
+            'page_size', 'image_root_url')
 
 
 class LectureSerializer(serializers.ModelSerializer):
@@ -23,7 +34,7 @@ class ContentSerializer(serializers.ModelSerializer):
         source='lecture_set',
         required=False,
         many=True)
-    TAs = UserSerializer(source='tas', required=True, many=True)
+    TAs = UserSerializer(source='tas', required=False, many=True)
 
     class Meta:
         model = Content

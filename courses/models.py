@@ -31,8 +31,19 @@ class File(models.Model):
     size = models.IntegerField()
     type = models.CharField(max_length=255)
     path = models.CharField(max_length=255)
+    absolute_path = models.CharField(max_length=255)
     url = models.CharField(max_length=255)
+    page_size = models.IntegerField()
+    image_root_url = models.CharField(max_length=255)
     lecture = models.ForeignKey(Lecture, null=True)
+
+
+class Comment(models.Model):
+    content = models.TextField()
+    file_page = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    file = models.ForeignKey(File, null=True)
+    user = models.ForeignKey(User, null=True)
 
 
 @receiver(pre_delete, sender=File)

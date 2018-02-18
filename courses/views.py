@@ -17,7 +17,13 @@ from rest_framework_jwt.authentication import (
     BaseJSONWebTokenAuthentication, JSONWebTokenAuthentication
 )
 
-from .serializers import CourseSerializer, ContentSerializer, LectureSerializer, FileSerializer
+from .serializers import (
+    CourseSerializer, ContentSerializer, LectureSerializer,
+    FileSerializer, CommentSerializer
+)
+
+from wand.image import Image
+import threading
 
 
 class CourseList(APIView, JSONWebTokenAuthentication):
@@ -165,12 +171,18 @@ class LectureList(APIView, JSONWebTokenAuthentication):
             # 跳掉已經存在的 file
             if file.get('id', False):
                 continue
+            path = path + '/' + file['title']
+            os.makedirs(path)
             file_path = LectureList.write_file(path, file['title'], file['data'])
             file.pop('preview')
             file.pop('data')
             file['url'] = DOMAIN + '/static/' + '/'.join(file_path.split('/')[3:])
             file['path'] = file_path
-            lecture.file_set.create(**file)
+            file['absolute_path'] = os.path.dirname(os.path.abspath(__file__)) + file_path[1:]
+            file['page_size'] = 0
+            file['image_root_url'] = DOMAIN + '/static/' + '/'.join(file_path.split('/')[3:-1]) + '/images'
+            f = lecture.file_set.create(**file)
+            threading.Thread(target=LectureList.convert_pdf_to_jpg, args=(path, file['title'], f.id)).start()
 
     @staticmethod
     def write_file(path, title, data):
@@ -180,6 +192,22 @@ class LectureList(APIView, JSONWebTokenAuthentication):
         with open(path, 'wb') as f:
             f.write(base64.decodebytes(data))
         return path
+
+    @staticmethod
+    def convert_pdf_to_jpg(path, title, id):
+        file_path = path + '/' + title
+        os.makedirs(path + '/images')
+        page_size = 0
+        with Image(filename=file_path, resolution=150) as img:
+            print('pages = ', len(img.sequence))
+            page_size = len(img.sequence)
+            image_path = path + '/images/page.jpeg'
+            with img.convert('jpeg') as converted:
+                converted.save(filename=image_path)
+        f = File.objects.get(id=id)
+        f.page_size = page_size
+        f.save()
+        print('convert finished')
 
 
 class LectureDetail(APIView, JSONWebTokenAuthentication):
@@ -217,6 +245,17 @@ class LectureDetail(APIView, JSONWebTokenAuthentication):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class FileList(APIView, JSONWebTokenAuthentication):
+    """
+    API endpoint that allows users to be viewed or edited.
+    """
+
+    def get(self, request, format=None):
+        files = File.objects.all()
+        serializer = FileSerializer(files, many=True)
+        return Response(serializer.data)
+
+
 class FileDetail(APIView, JSONWebTokenAuthentication):
     """
     Retrieve, update or delete a snippet instance.
@@ -236,3 +275,30 @@ class FileDetail(APIView, JSONWebTokenAuthentication):
         if File.objects.filter(id=file_id).exists():
             return Response(status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CommentList(APIView, JSONWebTokenAuthentication):
+
+    def get(self, request, file_id, page_num):
+        file = File.objects.get(id=file_id)
+        comments = (
+            file.comment_set
+                .filter(file_page=page_num)
+                .order_by('created_at'))
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, file_id, page_num):
+        request.data.pop('comments')
+        request.data.pop('fileId')
+        file_page = request.data.pop('nowPage')
+        request.data['file_page'] = file_page
+        serializer = CommentSerializer(data=request.data)
+        user, jwt = self.authenticate(request)
+        if serializer.is_valid():
+            file = File.objects.get(id=file_id)
+            comment = file.comment_set.create(**request.data)
+            comment.user = user
+            comment.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

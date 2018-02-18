@@ -138,8 +138,8 @@ STATICFILES_DIRS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
-        # 'rest_framework.permissions.IsAuthenticatedOrReadOnly',
         'rest_framework.permissions.AllowAny',
+        # 'rest_framework.permissions.IsAuthenticatedOrReadOnly',
         # 'rest_framework.permissions.IsAuthenticated',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -174,6 +174,7 @@ JWT_AUTH = {
 # )
 
 CORS_ORIGIN_REGEX_WHITELIST = (
+    r'^(https?://)?(\w+\.)?localhost:3000$',
     r'^(https?://)?(\w+\.)?127.0.0.1:3000$',
     r'^(https?://)?(\w+\.)?140.114.75.146$',
     r'^(https?://)?(\w+\.)?fiona.cs.nthu.edu.tw$',
