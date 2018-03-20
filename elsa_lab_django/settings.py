@@ -180,3 +180,10 @@ CORS_ORIGIN_REGEX_WHITELIST = (
     r'^(https?://)?(\w+\.)?140.114.75.146$',
     r'^(https?://)?(\w+\.)?elsa.cs.nthu.edu.tw$',
 )
+
+# email smtp settings
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'youremail'
+EMAIL_HOST_PASSWORD = 'yourpassword'
