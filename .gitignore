@@ -1,4 +1,6 @@
 *.pyc
 *.DS_Store
+.env
+local_settings.py
 course_data
 db.sqlite3
