@@ -1,8 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import pre_delete
+from django.db.models.signals import post_save
 from django.dispatch import receiver
-import os
+from django.core.mail import send_mail
+
 
 class Course(models.Model):
     title = models.CharField(max_length=255)
@@ -38,14 +40,29 @@ class File(models.Model):
     lecture = models.ForeignKey(Lecture, null=True)
 
 
+@receiver(pre_delete, sender=File)
+def delete_local_file(sender, instance,  **kwargs):
+    print(instance.path)
+
+
 class Comment(models.Model):
     content = models.TextField()
     file_page = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     file = models.ForeignKey(File, null=True)
     user = models.ForeignKey(User, null=True)
+    replies = models.ForeignKey("self", null=True)
 
 
-@receiver(pre_delete, sender=File)
-def delete_local_file(sender, instance,  **kwargs):
-    print(instance.path)
+@receiver(post_save, sender=Comment)
+def reply_notify(sender, instance,  **kwargs):
+    '''
+    send_mail(
+        'Subject here',
+        'Here is the message.',
+        'from@example.com',
+        ['to@example.com'],
+        fail_silently=False,
+    )
+    '''
+
