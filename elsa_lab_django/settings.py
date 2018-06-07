@@ -13,8 +13,8 @@ import datetime
 import os
 
 # domin setting
-DOMAIN = 'http://elsa.cs.nthu.edu.tw:8000'
-# DOMAIN = 'http://127.0.0.1:8000'
+# DOMAIN = 'http://elsa.cs.nthu.edu.tw:8000'
+DOMAIN = 'http://127.0.0.1:8000'
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'user',
     'courses',
-    'publications'
+    'publications',
+    'news'
 ]
 
 MIDDLEWARE = [
