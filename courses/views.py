@@ -8,7 +8,7 @@ from .models import Course, Content, Lecture, File
 from elsa_lab_django.settings import DOMAIN
 import os
 import base64
-
+from utils import send_email
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -291,6 +291,7 @@ class CommentList(APIView, JSONWebTokenAuthentication):
     def post(self, request, file_id, page_num):
         request.data.pop('comments')
         request.data.pop('fileId')
+        email_notify = request.data.pop('email_notify')
         file_page = request.data.pop('nowPage')
         request.data['file_page'] = file_page
         serializer = CommentSerializer(data=request.data)
@@ -300,5 +301,8 @@ class CommentList(APIView, JSONWebTokenAuthentication):
             comment = file.comment_set.create(**request.data)
             comment.user = user
             comment.save()
+            if email_notify["mentions"]:
+                email_notify["file"] = file
+                threading.Thread(target=send_email.send_email, args=(email_notify,)).start()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

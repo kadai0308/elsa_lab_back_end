@@ -59,6 +59,7 @@ class UserList(APIView, JSONWebTokenAuthentication):
     def updateProfile(self, profile, data):
         print(data)
         profile.name = data.get('name', '')
+        profile.nick_name = data.get('nick_name', '')
         profile.pictureUrl = data.get('pictureUrl', '')
         profile.studentType = data.get('studentType', 'course_student')
         profile.researchArea = data.get('researchArea', '')

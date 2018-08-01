@@ -20,7 +20,8 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = (
             'name', 'studentType', 'pictureUrl',
-            'researchArea', 'selfIntro', 'student_id'
+            'researchArea', 'selfIntro', 'student_id',
+            'nick_name'
         )
 
 
