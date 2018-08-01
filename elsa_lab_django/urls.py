@@ -22,6 +22,7 @@ from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token
 import user.views as users
 import courses.views as courses
 import publications.views as publications
+import news.views as news
 
 # router = routers.DefaultRouter()
 # router.register(r'users', views.UserViewSet)
@@ -53,7 +54,12 @@ urlpatterns += (
 )
 
 urlpatterns += (
-    url(r'^files/$', courses.FileList.as_view()),
+    url(r'^files$', courses.FileList.as_view()),
     url(r'^files/(?P<file_id>[0-9]+)$', courses.FileDetail.as_view()),
     url(r'^files/(?P<file_id>[0-9]+)/pages/(?P<page_num>[0-9]+)$', courses.CommentList.as_view()),
+)
+
+urlpatterns += (
+    url(r'^news$', news.NewsList.as_view()),
+    url(r'^news/(?P<news_id>[0-9]+)$', news.NewsDetail.as_view()),
 )

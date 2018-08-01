@@ -8,7 +8,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ('content', 'file_page', 'created_at', 'author')
+        fields = ('id', 'content', 'file_page', 'created_at', 'author')
 
 
 class FileSerializer(serializers.ModelSerializer):

@@ -73,7 +73,8 @@ class UserDetail(APIView, JSONWebTokenAuthentication):
     """
 
     def get(self, request, user_id, format=None):
-        user, jwt = self.authenticate(request)
+        user = User.objects.get(id=user_id)
+        # user, jwt = self.authenticate(request)
         if user.id != user_id:
             # raise auth error
             pass
