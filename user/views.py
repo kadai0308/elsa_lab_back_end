@@ -39,6 +39,7 @@ class UserList(APIView, JSONWebTokenAuthentication):
             resp_data['message'] = 'Account(Username) have to be email.'
             return JsonResponse(resp_data)
 
+        # if user already existed
         if User.objects.filter(username=username).exists():
             resp_data['type'] = 'error'
             resp_data['message'] = 'Username already exists.'
@@ -59,6 +60,7 @@ class UserList(APIView, JSONWebTokenAuthentication):
     def updateProfile(self, profile, data):
         print(data)
         profile.name = data.get('name', '')
+        profile.nick_name = data.get('nick_name', '')
         profile.pictureUrl = data.get('pictureUrl', '')
         profile.studentType = data.get('studentType', 'course_student')
         profile.researchArea = data.get('researchArea', '')

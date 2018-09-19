@@ -8,7 +8,7 @@ from .models import Course, Content, Lecture, File
 from elsa_lab_django.settings import DOMAIN
 import os
 import base64
-
+from utils import send_email
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -82,23 +82,33 @@ class ContentList(APIView, JSONWebTokenAuthentication):
         contents = course.content_set.all()
         serializer = ContentSerializer(contents, many=True)
         return Response(serializer.data)
-
+    
+    # 新增 content
     def post(self, request, course_id, format=None):
         course = Course.objects.get(id=course_id)
         serializer = ContentSerializer(data=request.data)
+        
+        # 不需要 users, ta_names
         request.data.pop('users')
         request.data.pop('ta_names')
-        user_ids = request.data.pop('ta_ids')
-        users = []
-        for id in user_ids:
-            user = User.objects.get(id=id)
-            users.append(user)
+        
+        # 新增 ta
+        ta_ids = request.data.pop('ta_ids')
+        tas = []
+        for id in ta_ids:
+            ta = User.objects.get(id=id)
+            tas.append(ta)
+
+        # 新增資料
         if serializer.is_valid():
             content = course.content_set.create(**request.data)
-            content.tas.set(users)
+            content.tas.set(tas)
+            
+            # 新增相對應的資料夾
             path = './courses/course_data/{}/{}'.format(course.title, content.year)
             if not os.path.exists(path):
                 os.makedirs(path)
+            
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -115,17 +125,20 @@ class ContentDetail(APIView, JSONWebTokenAuthentication):
 
     def put(self, request, course_id, content_id, format=None):
         content = Content.objects.filter(id=content_id)
+        
+        # 刪除不需要的
         request.data.pop('users')
         request.data.pop('TAs')
         request.data.pop('lectures')
         request.data.pop('ta_names')
-        user_ids = request.data.pop('ta_ids')
-        print (request.data)
-        users = []
-        for id in user_ids:
-            user = User.objects.get(id=id)
-            users.append(user)
-        content[0].tas.set(users)
+
+        # 更新 ta
+        ta_ids = request.data.pop('ta_ids')
+        tas = []
+        for id in ta_ids:
+            ta = User.objects.get(id=id)
+            tas.append(ta)
+        content[0].tas.set(tas)
         content.update(**request.data)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -152,16 +165,26 @@ class LectureList(APIView, JSONWebTokenAuthentication):
         files = request.data.pop('files')
         content = Content.objects.get(id=content_id)
         course = content.course
+        
+        # 計算第幾章
         lecture_number = content.lecture_set.count() + 1
         request.data['lecture_number'] = lecture_number
+        
         serializer = LectureSerializer(data=request.data)
         if serializer.is_valid():
+            
+            # 新增資料夾
             path = './courses/course_data/{}/{}/lecture{:0>2}'.format(
                 course.title, content.year, lecture_number)
             if not os.path.exists(path):
                 os.makedirs(path)
+            
+            # 新增 db 資料
             lecture = content.lecture_set.create(**request.data)
+            
+            # 寫入檔案
             LectureList.new_file(lecture, path, files)
+            
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -171,9 +194,13 @@ class LectureList(APIView, JSONWebTokenAuthentication):
             # 跳掉已經存在的 file
             if file.get('id', False):
                 continue
+            
+            # 新增資料夾和寫入檔案
             path = path + '/' + file['title']
             os.makedirs(path)
             file_path = LectureList.write_file(path, file['title'], file['data'])
+            
+            # 刪除和填入資料
             file.pop('preview')
             file.pop('data')
             file['url'] = DOMAIN + '/static/' + '/'.join(file_path.split('/')[3:])
@@ -181,20 +208,31 @@ class LectureList(APIView, JSONWebTokenAuthentication):
             file['absolute_path'] = os.path.dirname(os.path.abspath(__file__)) + file_path[1:]
             file['page_size'] = 0
             file['image_root_url'] = DOMAIN + '/static/' + '/'.join(file_path.split('/')[3:-1]) + '/images'
+            
+            # 新增 db 資料
             f = lecture.file_set.create(**file)
+
+            # 執行 pdf 轉換
             threading.Thread(target=LectureList.convert_pdf_to_jpg, args=(path, file['title'], f.id)).start()
 
     @staticmethod
     def write_file(path, title, data):
+        
+        # 刪除前綴
         main_data = data.split(',')[-1]
+        
+        # encoding to utf8
         data = bytes(main_data, encoding='utf8')
         path = path + '/' + title
+        
+        # 寫入
         with open(path, 'wb') as f:
             f.write(base64.decodebytes(data))
         return path
 
     @staticmethod
     def convert_pdf_to_jpg(path, title, id):
+        # 轉換 pdf 成 jpg
         file_path = path + '/' + title
         os.makedirs(path + '/images')
         page_size = 0
@@ -228,11 +266,16 @@ class LectureDetail(APIView, JSONWebTokenAuthentication):
         lecture_number = lecture[0].lecture_number
         serializer = LectureSerializer(data=request.data)
         if serializer.is_valid():
+            # 確認資料夾是否存在 沒有的話就開
             path = './courses/course_data/{}/{}/lecture{:0>2}'.format(
                 course.title, content.year, lecture_number)
             if not os.path.exists(path):
                 os.makedirs(path)
+            
+            # 更新 db 資料
             lecture.update(**request.data)
+
+            # 寫入檔案
             LectureList.new_file(lecture[0], path, files)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -276,7 +319,7 @@ class FileDetail(APIView, JSONWebTokenAuthentication):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
+# 留言
 class CommentList(APIView, JSONWebTokenAuthentication):
 
     def get(self, request, file_id, page_num):
@@ -291,6 +334,7 @@ class CommentList(APIView, JSONWebTokenAuthentication):
     def post(self, request, file_id, page_num):
         request.data.pop('comments')
         request.data.pop('fileId')
+        email_notify = request.data.pop('email_notify')
         file_page = request.data.pop('nowPage')
         request.data['file_page'] = file_page
         serializer = CommentSerializer(data=request.data)
@@ -300,5 +344,12 @@ class CommentList(APIView, JSONWebTokenAuthentication):
             comment = file.comment_set.create(**request.data)
             comment.user = user
             comment.save()
+
+            # 寄信通知
+            if email_notify["mentions"]:
+                email_notify["file"] = file
+                # 開 thread 寄信, 避免 timeout
+                threading.Thread(target=send_email.send_email, args=(email_notify,)).start()
+            
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

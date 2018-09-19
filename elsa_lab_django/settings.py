@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'user',
     'courses',
     'publications',
-    'news'
+    'news',
+    'homePage',
 ]
 
 MIDDLEWARE = [
@@ -134,6 +135,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "user/avaters"),
     os.path.join(BASE_DIR, "courses/course_data"),
     os.path.join(BASE_DIR, "publications/publications_file"),
+    os.path.join(BASE_DIR, "homePage/cover_image"),
 ]
 
 # rest framework setting

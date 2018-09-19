@@ -1,17 +1,18 @@
 from django.db import models
 
-# Create your models here.
 class News(models.Model):
     
-
     title = models.CharField(max_length=255)
     description = models.TextField()
     content = models.TextField()
     image_url = models.URLField(max_length=200)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     @staticmethod
-    def get_all_news():
-        return News.objects.all()
+    def get_all_news(order=[]):
+        # order by argument
+        return News.objects.all().order_by(*order)
 
     @staticmethod
     def get_news(news_id):
@@ -27,10 +28,10 @@ class News(models.Model):
         from .serializers import NewsSerializer
 
         serializer = NewsSerializer(data=data)
-        print(data)
         if serializer.is_valid():
             serializer.save()
             return (True, serializer.data)
+        print(serializer.errors)
         return (False, serializer.errors)
 
     @staticmethod

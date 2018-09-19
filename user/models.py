@@ -21,13 +21,14 @@ studentTypeChoices = tuple([(str(i.value), i.name) for i in studentType])
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     studentType = models.CharField(max_length=1, choices=studentTypeChoices)
+    nick_name = models.CharField(max_length=255)
     name = models.CharField(max_length=255, default='')
     pictureUrl = models.URLField(max_length=200, default=DOMAIN + "/static/users_avaters/default.jpg")
     researchArea = models.TextField()
     selfIntro = models.TextField()
     student_id = models.CharField(max_length=255)
 
-
+# !!! NEED TO BE REFACTORED !!!
 @receiver(post_save, sender=Profile)
 def save_user_profile(sender, instance, **kwargs):
     print(instance.pictureUrl)
